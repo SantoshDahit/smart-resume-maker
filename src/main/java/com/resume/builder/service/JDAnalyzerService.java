@@ -47,16 +47,64 @@ public class JDAnalyzerService {
     }
 
     private String extractJobTitle(String text) {
-        // Look for common job title patterns
+        // Look for common job title patterns in first few lines
         String[] lines = text.split("\n");
-        for (String line : lines) {
-            line = line.trim();
-            if (line.matches("(?i).*(engineer|developer|manager|analyst|designer|consultant|architect).*") 
-                && line.length() < 100) {
-                return line;
+        
+        // Common job title keywords - expanded list
+        String[] titleKeywords = {
+            "engineer", "developer", "manager", "analyst", "designer", "consultant", 
+            "architect", "specialist", "coordinator", "lead", "director", "officer",
+            "administrator", "technician", "scientist", "researcher", "associate",
+            "executive", "supervisor", "assistant", "representative", "agent",
+            "programmer", "tester", "qa", "devops", "sre", "scrum master", "product owner"
+        };
+        
+        // First try: Look in first 5 lines for job title patterns
+        for (int i = 0; i < Math.min(5, lines.length); i++) {
+            String line = lines[i].trim();
+            
+            // Skip empty lines
+            if (line.isEmpty()) continue;
+            
+            // Check if line contains any title keyword and is reasonably short
+            if (line.length() < 100 && line.length() > 3) {
+                for (String keyword : titleKeywords) {
+                    if (line.toLowerCase().contains(keyword)) {
+                        // Clean up the line (remove extra whitespace, common prefixes)
+                        String cleaned = line
+                            .replaceAll("(?i)^(position:|job title:|role:|title:)\\s*", "")
+                            .trim();
+                        if (!cleaned.isEmpty()) {
+                            return cleaned;
+                        }
+                    }
+                }
             }
         }
-        return "Position";
+        
+        // Second try: Look for "Job Title:" or "Position:" patterns anywhere in text
+        Pattern titlePattern = Pattern.compile("(?i)(job title|position|role):\\s*([^\\n]+)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = titlePattern.matcher(text);
+        if (matcher.find()) {
+            String title = matcher.group(2).trim();
+            if (title.length() < 100 && !title.isEmpty()) {
+                return title;
+            }
+        }
+        
+        // Third try: First non-empty line that's short enough (likely the title)
+        for (String line : lines) {
+            line = line.trim();
+            if (!line.isEmpty() && line.length() < 80 && line.length() > 3) {
+                // Avoid lines that look like sections or headers
+                if (!line.toLowerCase().matches(".*(description|about|overview|summary|company).*")) {
+                    return line;
+                }
+            }
+        }
+        
+        // Fallback
+        return "Untitled Position";
     }
 
     private String extractCompanyName(String text) {

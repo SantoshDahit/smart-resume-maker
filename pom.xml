@@ -15,7 +15,7 @@
     <groupId>com.resume</groupId>
     <artifactId>builder</artifactId>
     <version>1.0.0</version>
-    <n>Smart Resume Builder</n>
+    <name>Smart Resume Builder</name>
     <description>AI-Powered Resume Builder with JD Matching</description>
     
     <properties>

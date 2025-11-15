@@ -77,4 +77,26 @@ public class JobDescriptionController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/{id}/title")
+    public ResponseEntity<JobDescription> updateJobTitle(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        
+        log.info("Received request to update job title for JD {}", id);
+        
+        return jobDescriptionRepository.findById(id)
+            .map(jd -> {
+                String newTitle = request.get("title");
+                log.info("Updating job title for JD {} from '{}' to '{}'", id, jd.getJobTitle(), newTitle);
+                jd.setJobTitle(newTitle);
+                JobDescription updated = jobDescriptionRepository.save(jd);
+                log.info("Successfully updated job title for JD {}", id);
+                return ResponseEntity.ok(updated);
+            })
+            .orElseGet(() -> {
+                log.error("Job Description with id {} not found", id);
+                return ResponseEntity.notFound().build();
+            });
+    }
 }

@@ -1,17 +1,20 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { FileText, Briefcase, BarChart3, Home } from 'lucide-react';
+import { FileText, Briefcase, BarChart3, Home, FolderOpen } from 'lucide-react';
+import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import ResumeUpload from './pages/ResumeUpload';
 import ResumeBuilder from './pages/ResumeBuilder';
 import JobDescriptions from './pages/JobDescriptions';
 import MatchingPage from './pages/MatchingPage';
+import ResumeList from './pages/ResumeList';
 
 function App() {
   const location = useLocation();
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
+    { path: '/resumes', icon: FolderOpen, label: 'My Resumes' },
     { path: '/upload', icon: FileText, label: 'Upload Resume' },
     { path: '/job-descriptions', icon: Briefcase, label: 'Job Descriptions' },
     { path: '/matching', icon: BarChart3, label: 'Matching' },
@@ -58,7 +61,9 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/resumes" element={<ResumeList />} />
           <Route path="/upload" element={<ResumeUpload />} />
           <Route path="/resume/:id" element={<ResumeBuilder />} />
           <Route path="/job-descriptions" element={<JobDescriptions />} />

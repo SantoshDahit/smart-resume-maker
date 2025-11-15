@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, PlusCircle, Trash2, Edit2 } from 'lucide-react';
+import { Briefcase, PlusCircle, Trash2, Edit2, Check, X } from 'lucide-react';
 import { jobDescriptionAPI } from '../services/api';
 
 function JobDescriptions() {
@@ -8,6 +8,8 @@ function JobDescriptions() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState('');
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [editingTitleValue, setEditingTitleValue] = useState('');
 
   useEffect(() => {
     fetchJobDescriptions();
@@ -73,6 +75,38 @@ function JobDescriptions() {
     setShowForm(false);
     setEditingId(null);
     setFormData('');
+  };
+
+  const handleTitleEdit = (jd) => {
+    setEditingTitleId(jd.id);
+    setEditingTitleValue(jd.jobTitle || '');
+  };
+
+  const handleTitleSave = async (id) => {
+    try {
+      console.log('Updating title for JD:', id, 'New title:', editingTitleValue);
+      
+      // Update only the title using the new API endpoint
+      const response = await jobDescriptionAPI.updateJobTitle(id, editingTitleValue);
+      console.log('Update response:', response.data);
+      
+      // Update local state
+      setJds(jds.map(j => j.id === id ? { ...j, jobTitle: editingTitleValue } : j));
+      
+      setEditingTitleId(null);
+      setEditingTitleValue('');
+      
+      console.log('Title updated successfully');
+    } catch (error) {
+      console.error('Error updating job title:', error);
+      console.error('Error details:', error.response?.data);
+      alert('Failed to update job title: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleTitleCancel = () => {
+    setEditingTitleId(null);
+    setEditingTitleValue('');
   };
 
   return (
@@ -164,9 +198,44 @@ function JobDescriptions() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <Briefcase className="w-5 h-5 text-indigo-600" />
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {jd.jobTitle || 'Job Position'}
-                      </h3>
+                      {editingTitleId === jd.id ? (
+                        <div className="flex items-center space-x-2 flex-1">
+                          <input
+                            type="text"
+                            value={editingTitleValue}
+                            onChange={(e) => setEditingTitleValue(e.target.value)}
+                            className="flex-1 px-3 py-1 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleTitleSave(jd.id)}
+                            className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            title="Save"
+                          >
+                            <Check className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={handleTitleCancel}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            title="Cancel"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {jd.jobTitle || 'Job Position'}
+                          </h3>
+                          <button
+                            onClick={() => handleTitleEdit(jd)}
+                            className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                            title="Edit title"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {jd.companyName && (
                       <p className="text-sm text-gray-600 mb-2">{jd.companyName}</p>
